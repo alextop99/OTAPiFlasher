@@ -4,5 +4,7 @@
     "username" : "otauser",
     "password" : "OTApassword2022",
     "topic" : "dev/1",
-    "qos" : 1
+    "qos" : 1,
+    "flash_cmd" : "/usr/share/arduino/hardware/tools/avrdude -C /usr/share/arduino/hardware/tools/avrdude.conf -v -p atmega328p -c arduino -P /dev/ttyACM0 -b 115200 -D -Uflash:w:",
+    "after_flash_cmd" : ":i"
 }

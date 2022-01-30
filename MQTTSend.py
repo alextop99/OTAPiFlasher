@@ -18,12 +18,14 @@ topic = settings.topic
 qos = settings.qos
 
 ## Send config
-filename="test.txt"
+filename="Blink.ino.hex"
 BLOCK_SIZE=2000
 
 ## Pong message
 pongReceived = False
 pongTimestamp = None
+
+resReceived = False
 
 ## RECEIVE FUNCTIONS FOR VALIDATION
 inHashFunc = hashlib.md5()
@@ -32,13 +34,17 @@ fileData = b""
 file = None
 
 def process_message(msg):
-    global outFileName, fileData, file, pongReceived, pongTimestamp
+    global outFileName, fileData, file, pongReceived, pongTimestamp, resReceived
 
     msg_in=msg.decode("utf-8")
     msg_in=msg_in.split(",,")
+
     if msg_in[0] == "pong":
         pongReceived = True
         pongTimestamp = msg_in[1]
+    if msg_in[0] == "res":
+        resReceived = True
+        print(str(msg_in[1]))
     if msg_in[0] == "header":
         outFileName = "copy_" + msg_in[1]
         print("Opening file: " + outFileName)
@@ -135,6 +141,18 @@ def c_publish(client, topic, message, qos):
         else:
             raise SystemExit("not got puback so quitting")
 
+def waitForResult(period=0.25, wait_time=40):
+    global resReceived
+
+    wcount = 0
+    while not resReceived:
+        time.sleep(period)
+        wcount+=1
+        if wcount>wait_time:
+            print("Result took too long, probably failed flash!!")
+            return False
+    return True
+
 # Main function
 def main():
     client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
@@ -158,6 +176,8 @@ def main():
         filehash = send_file(client, filename)
 
         send_end(client, filename, filehash)
+
+        waitForResult()
 
     client.disconnect()
     client.loop_stop()
