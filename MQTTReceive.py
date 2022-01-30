@@ -1,20 +1,20 @@
-import time
 import paho.mqtt.client as paho
 from paho import mqtt
 import hashlib
 from datetime import datetime
+from config import settings
 
 ## Server config
-server = "a50f52ba5eb6490bbfb6bcd53bd555ae.s1.eu.hivemq.cloud"
-port = 8883
+server = settings.server
+port = settings.port
 
 ## User config
-username = "otauser"
-password = "OTApassword2022"
+username = settings.username
+password = settings.password
 
 ## Device config
-topic = "dev/1"
-qos = 1
+topic = settings.topic
+qos = settings.qos
 
 # Defines
 inHashFunc = hashlib.md5()

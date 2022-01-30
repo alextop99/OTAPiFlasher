@@ -3,18 +3,23 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import hashlib
 from datetime import datetime
+from config import settings
 
 ## Server config
-server = "a50f52ba5eb6490bbfb6bcd53bd555ae.s1.eu.hivemq.cloud"
-port = 8883
+server = settings.server
+port = settings.port
 
 ## User config
-username = "otauser"
-password = "OTApassword2022"
+username = settings.username
+password = settings.password
 
 ## Device config
-topic = "dev/1"
-qos = 1
+topic = settings.topic
+qos = settings.qos
+
+## Send config
+filename="test.txt"
+BLOCK_SIZE=2000
 
 ## Pong message
 pongReceived = False
@@ -57,11 +62,6 @@ def process_message(msg):
 def on_message(client, userdata, message):
     process_message(message.payload)
 
-## SEND FUNCTIONS
-filename="test.txt"
-
-BLOCK_SIZE=2000
-
 def on_publish(client, userdata, mid):
     client.mid_value=mid
     client.puback_flag=True  
@@ -70,7 +70,7 @@ def on_publish(client, userdata, mid):
 def wait_for(client,msgType,period=0.25,wait_time=40,running_loop=False):
     client.running_loop=running_loop
     wcount=0
-    
+
     while True:
         if msgType=="PUBACK":
             if client.on_publish:        
@@ -128,7 +128,6 @@ def c_publish(client, topic, message, qos):
     if res==0:
         if wait_for(client,"PUBACK",running_loop=True):
             if mid==client.mid_value:
-                print("match mid ",str(mid))
                 client.puback_flag=False #reset flag
             else:
                 print("quitting")
@@ -164,5 +163,5 @@ def main():
     client.loop_stop()
 
 if __name__ == "__main__":
-   main()
+    main()
 
