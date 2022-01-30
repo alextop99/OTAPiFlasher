@@ -2,6 +2,7 @@ import time
 import paho.mqtt.client as paho
 from paho import mqtt
 import hashlib
+from datetime import datetime
 
 ## Server config
 server = "a50f52ba5eb6490bbfb6bcd53bd555ae.s1.eu.hivemq.cloud"
@@ -21,15 +22,21 @@ filename = b""
 fileData = b""
 file = None
 
+def send_pong(client):
+    pongmsg="pong"+",,"+str(datetime.now())
+    pongmsg=bytearray(pongmsg,"utf-8")
+    client.publish(topic, pongmsg, qos)
+
+
 # Message processing function
-def process_message(msg):
-    global filename
-    global fileData
-    global file
+def process_message(client, msg):
+    global filename, fileData, file
 
     msg_in=msg.decode("utf-8")
     msg_in=msg_in.split(",,")
-    if msg_in[0] == "header":
+    if msg_in[0] == "ping":
+        send_pong(client)
+    elif msg_in[0] == "header":
         filename = msg_in[1]
         print("Opening file: " + filename)
         file = open(filename, "wb")
@@ -51,20 +58,21 @@ def process_message(msg):
 
 # Message receive callback
 def on_message(client, userdata, message):
-   process_message(message.payload)
+    process_message(client, message.payload)
 
 # Main function
 def main():
-   client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
+    client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
+    
+    client.on_message = on_message
 
-   client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
-   client.username_pw_set(username, password)
-   client.connect(server, port)
+    client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
+    client.username_pw_set(username, password)
+    client.connect(server, port)
+    
+    client.subscribe(topic, qos)
 
-   client.on_message = on_message
-   client.subscribe(topic, qos)
-
-   client.loop_forever()
+    client.loop_forever()
 
 if __name__ == "__main__":
-   main()
+    main()
