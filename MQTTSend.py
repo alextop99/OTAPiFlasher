@@ -1,7 +1,6 @@
-import time
+import time, sys, hashlib, getopt
 import paho.mqtt.client as paho
 from paho import mqtt
-import hashlib
 from datetime import datetime
 from config import settings
 
@@ -18,7 +17,6 @@ topic = settings.topic
 qos = settings.qos
 
 ## Send config
-filename="Blink.ino.hex"
 BLOCK_SIZE=2000
 
 ## Pong message
@@ -154,7 +152,25 @@ def waitForResult(period=0.25, wait_time=40):
     return True
 
 # Main function
-def main():
+def main(argv):
+    filename = ""
+    try:
+        opts, args = getopt.getopt(argv,"hf:",["hexfile="])
+    except getopt.GetoptError:
+        print('GetoptError: MQTTSend -f <hexfile>')
+        sys.exit(2)
+    
+    for opt, arg in opts:
+        if opt == '-h':
+            print('MQTTSend -f <hexfile>')
+            sys.exit()
+        elif opt in ("-f", "--hexfile"):
+            filename = arg.strip()
+    
+    if filename == "":
+        print('MQTTSend -f <hexfile>')
+        sys.exit()
+    
     client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
 
     client.puback_flag=False
@@ -183,5 +199,4 @@ def main():
     client.loop_stop()
 
 if __name__ == "__main__":
-    main()
-
+    main(sys.argv[1:])
