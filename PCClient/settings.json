@@ -1,0 +1,8 @@
+{
+    "server" : "a50f52ba5eb6490bbfb6bcd53bd555ae.s1.eu.hivemq.cloud",
+    "port" : 8883,
+    "username" : "otauser",
+    "password" : "OTApassword2022",
+    "topic" : "dev/1",
+    "qos" : 1
+}
